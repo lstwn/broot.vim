@@ -23,6 +23,7 @@ function! s:OpenBrootIn(path, edit_cmd) abort
         endfor
         call delete(l:out_file)
     endif
+    filetype detect
     redraw!
 endfunction
 
