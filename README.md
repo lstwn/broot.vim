@@ -21,6 +21,9 @@ Then try `:Broot` in vim which opens broot in vim's current working directory.
 Set in your `.vimrc`:
 
 ```{vim}
+" I highly recommend setting something like this:
+nnoremap <silent> <leader>e :Broot<CR>
+
 " adjust path to config (this defaults to '~/.config/broot/conf.toml'):
 let g:broot_default_conf = "<path/to/broot/conf.toml>"
 
