@@ -1,5 +1,5 @@
 if exists("g:loaded_broot") || &compatible
-  finish
+    finish
 endif
 let g:loaded_broot = 1
 
@@ -24,7 +24,6 @@ function! s:OpenBrootIn(path, edit_cmd) abort
         call delete(l:out_file)
     endif
     redraw!
-    filetype detect
 endfunction
 
 command! BrootCurrentDirectory call s:OpenBrootIn("%:p:h", s:broot_default_edit_command)
@@ -33,17 +32,15 @@ command! Broot BrootWorkingDirectory
 
 " Open Broot in the directory passed by argument
 function! s:OpenBrootOnVimLoadDir(argv_path) abort
-  " TODO: why not pass straight to OpenBrootIn ?
-  " let path = expand(a:argv_path)
-  " Delete empty buffer created by vim
-  bdelete!
-  call s:OpenBrootIn(a:argv_path, 'edit')
+    " Delete empty buffer created by vim
+    bdelete!
+    call s:OpenBrootIn(a:argv_path, 'edit')
 endfunction
 
 " To open broot when vim loads a directory
 if exists('g:broot_replace_netrw') && g:broot_replace_netrw
-  augroup broot_replace_netrw
-    autocmd VimEnter * silent! autocmd! FileExplorer
-    autocmd BufEnter * if isdirectory(expand("%")) | call s:OpenBrootOnVimLoadDir("%") | endif
-  augroup END
+    augroup broot_replace_netrw
+        autocmd VimEnter * silent! autocmd! FileExplorer
+        autocmd BufEnter * if isdirectory(expand("%")) | call s:OpenBrootOnVimLoadDir("%") | endif
+    augroup END
 endif
