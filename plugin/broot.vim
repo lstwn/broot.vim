@@ -1,3 +1,8 @@
+if exists("g:loaded_broot") || &compatible
+  finish
+endif
+let g:loaded_broot = 1
+
 let s:broot_default_conf = get(g:, 'broot_default_conf', expand('~/.config/broot/conf.toml'))
 let s:broot_vim_conf = fnamemodify(resolve(expand('<sfile>:p')), ':h:h').'/broot.toml'
 let s:broot_confs = s:broot_default_conf.';'.s:broot_vim_conf
