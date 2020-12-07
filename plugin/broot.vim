@@ -34,10 +34,10 @@ command! Broot BrootWorkingDirectory
 " Open Broot in the directory passed by argument
 function! s:OpenBrootOnVimLoadDir(argv_path) abort
   " TODO: why not pass straight to OpenBrootIn ?
-  let path = expand(a:argv_path)
+  " let path = expand(a:argv_path)
   " Delete empty buffer created by vim
   bdelete!
-  call s:OpenBrootIn(path, 'edit')
+  call s:OpenBrootIn(a:argv_path, 'edit')
 endfunction
 
 " To open broot when vim loads a directory
