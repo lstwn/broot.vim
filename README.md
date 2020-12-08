@@ -6,6 +6,8 @@ is opened in vim.
 At the same time, your broot `conf.toml` is respected, i.e. only the little
 mentioned enter behavior is appended to your defaults!
 
+![demo](demo.gif)
+
 ## Installation
 
 Use your favourite vim plugin manager. For instance, with `vim-plug`:
