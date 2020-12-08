@@ -48,5 +48,5 @@ let g:broot_replace_netrw = 1
 
 ## Thanks
 
-Special Thanks to (ranger.vim)[https://github.com/francoiscabrol/ranger.vim]
+Special thanks to [ranger.vim](https://github.com/francoiscabrol/ranger.vim)
 for some inspiration and avoidance of some common pitfalls!
