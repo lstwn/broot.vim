@@ -23,12 +23,14 @@ let s:broot_default_edit_command = get(g:, 'broot_default_edit_command', 'edit')
 
 " Opens broot in the given path and opens the file(s) according to edit_cmd
 function! g:OpenBrootIn(path, edit_cmd) abort
-    let l:path = expand(a:path)
+    let l:edit_cmd = get(a:, 'edit_cmd', s:broot_default_edit_command)
+    let l:path = get(a:, 'path', ".")
+    let l:path = expand(l:path)
     let l:out_file = tempname()
     silent execute '!'.s:broot_exec." --out '".l:out_file."' ".l:path
     if (filereadable(l:out_file))
         for f in readfile(l:out_file)
-            execute a:edit_cmd." ".f
+            execute l:edit_cmd." ".f
         endfor
         call delete(l:out_file)
     endif
@@ -36,9 +38,9 @@ function! g:OpenBrootIn(path, edit_cmd) abort
     redraw!
 endfunction
 
-command! BrootCurrentDirectory call g:OpenBrootIn("%:p:h", s:broot_default_edit_command)
-command! BrootWorkingDirectory call g:OpenBrootIn(".", s:broot_default_edit_command)
-command! Broot BrootWorkingDirectory
+command! BrootCurrentDirectory call g:OpenBrootIn("%:p:h")
+command! BrootWorkingDirectory call g:OpenBrootIn(".")
+command! -nargs=? -complete=dir Broot call g:OpenBrootIn(<f-args>)
 
 " Open Broot in the directory passed by argument
 function! s:OpenBrootOnVimLoadDir(argv_path) abort
