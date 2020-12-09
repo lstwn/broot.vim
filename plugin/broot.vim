@@ -26,20 +26,25 @@ function! g:OpenBrootIn(...) abort
     let l:edit_cmd = get(a:, 2, s:broot_default_edit_command)
     let l:path = expand(get(a:, 1, "."))
     let l:out_file = tempname()
-    silent execute '!'.s:broot_exec." --out '".l:out_file."' ".l:path
-    if (filereadable(l:out_file))
-        for f in readfile(l:out_file)
-            execute l:edit_cmd." ".f
-        endfor
-        call delete(l:out_file)
-    endif
-    filetype detect
-    redraw!
+    try
+        silent execute '!'.s:broot_exec." --out '".l:out_file."' ".l:path
+        if (filereadable(l:out_file))
+            for f in readfile(l:out_file)
+                execute l:edit_cmd." ".f
+            endfor
+            call delete(l:out_file)
+        endif
+        filetype detect
+    catch
+        echoerr "[Broot.vim] Error: " . v:exception
+    finally
+        redraw!
+    endtry
 endfunction
 
-command! BrootCurrentDirectory call g:OpenBrootIn("%:p:h")
-command! BrootWorkingDirectory call g:OpenBrootIn(".")
-command! -nargs=? -complete=dir Broot call g:OpenBrootIn(<f-args>)
+command! -nargs=? BrootCurrentDirectory call g:OpenBrootIn("%:p:h", <f-args>)
+command! -nargs=? BrootWorkingDirectory call g:OpenBrootIn(".", <f-args>)
+command! -nargs=* -complete=dir Broot call g:OpenBrootIn(<f-args>)
 
 " Open Broot in the directory passed by argument
 function! s:OpenBrootOnVimLoadDir(argv_path) abort
