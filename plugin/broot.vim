@@ -29,8 +29,9 @@ function! g:OpenBrootIn(...) abort
     try
         silent execute '!'.s:broot_exec." --out '".l:out_file."' ".l:path
         if (filereadable(l:out_file))
-            for f in readfile(l:out_file)
-                execute l:edit_cmd." ".f
+            for l:file in readfile(l:out_file)
+                let l:file = fnamemodify(l:file, ":~:.")
+                execute l:edit_cmd." ".l:file
             endfor
             call delete(l:out_file)
         endif
