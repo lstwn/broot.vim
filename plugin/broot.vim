@@ -3,12 +3,21 @@ if exists("g:loaded_broot") || &compatible
 endif
 let g:loaded_broot = 1
 
-let s:broot_default_conf = get(g:, 'broot_default_conf', expand('~/.config/broot/conf.toml'))
-let s:broot_vim_conf = fnamemodify(resolve(expand('<sfile>:p')), ':h:h').'/broot.toml'
-let s:broot_confs = s:broot_default_conf.';'.s:broot_vim_conf
+let s:broot_default_conf_path = get(g:, 'broot_default_conf_path', expand('~/.config/broot/conf.toml'))
+let s:broot_vim_conf_path = fnamemodify(resolve(expand('<sfile>:p')), ':h:h').'/broot.toml'
+let s:broot_conf_paths = s:broot_default_conf_path.';'.s:broot_vim_conf_path
+
+let s:broot_vim_conf = get(g:, 'broot_vim_conf', [
+            \ '[[verbs]]',
+            \ 'key = "enter"',
+            \ 'execution = ":print_path"',
+            \ 'apply_to = "file"',
+            \ ])
+
+call writefile(s:broot_vim_conf, s:broot_vim_conf_path)
 
 let s:broot_command = get(g:, 'broot_command', 'br')
-let s:broot_exec = s:broot_command." --conf '".s:broot_confs."'"
+let s:broot_exec = s:broot_command." --conf '".s:broot_conf_paths."'"
 
 let s:broot_default_edit_command = get(g:, 'broot_default_edit_command', 'edit')
 

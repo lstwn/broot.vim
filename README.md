@@ -34,16 +34,25 @@ nnoremap <silent> <leader>e :Broot<CR>
 command! BrootWorkingDirectoryNewTab call g:OpenBrootIn(".", "tabedit")
 
 " adjust path to config (this defaults to '~/.config/broot/conf.toml'):
-let g:broot_default_conf = "<path/to/broot/conf.toml>"
+let g:broot_default_conf_path = "<path/to/broot/conf.toml>"
+
+" set this to replace netrw with broot (off per default):
+let g:broot_replace_netrw = 1
+
+" if you want to change the config that is appended on top of your regular
+" broot conf.toml set this array of strings (default shown):
+let g:broot_vim_conf = [
+            \ '[[verbs]]',
+            \ 'key = "enter"',
+            \ 'execution = ":print_path"',
+            \ 'apply_to = "file"',
+            \ ]
 
 " adjust broot command with (this defaults to 'br'):
 let g:broot_command = 'br'
 
 " adjust default edit/open command (this defaults to 'edit'):
 let g:broot_default_edit_command = 'tabedit'
-
-" set this to replace netrw with broot (off per default):
-let g:broot_replace_netrw = 1
 ```
 
 ## Thanks
