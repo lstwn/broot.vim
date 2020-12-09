@@ -28,10 +28,14 @@ Hence, you might want to set in your `.vimrc`:
 
 ```{vim}
 " I highly recommend setting something like this:
-nnoremap <silent> <leader>e :Broot<CR>
+nnoremap <silent> <leader>e :BrootWorkingDirectory<CR>
+nnoremap <silent> - :BrootCurrentDirectory<CR>
 
 " you might want to:
 command! BrootWorkingDirectoryNewTab call g:OpenBrootIn(".", "tabedit")
+" but you could also do ':Broot . tabedit' as a command!
+" i.e. ':Broot <dirname> <edit_command>' with both args being optional.
+" ':Broot' opens current working directory with g:broot_default_edit_command.
 
 " adjust path to config (this defaults to '~/.config/broot/conf.toml'):
 let g:broot_default_conf_path = "<path/to/broot/conf.toml>"
