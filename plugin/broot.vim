@@ -24,8 +24,7 @@ let s:broot_default_edit_command = get(g:, 'broot_default_edit_command', 'edit')
 " Opens broot in the given path and opens the file(s) according to edit_cmd
 function! g:OpenBrootIn(...) abort
     let l:edit_cmd = get(a:, 2, s:broot_default_edit_command)
-    let l:path = get(a:, 1, ".")
-    let l:path = expand(l:path)
+    let l:path = expand(get(a:, 1, "."))
     let l:out_file = tempname()
     silent execute '!'.s:broot_exec." --out '".l:out_file."' ".l:path
     if (filereadable(l:out_file))
