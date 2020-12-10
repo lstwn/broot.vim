@@ -44,7 +44,7 @@ function! g:OpenBrootIn(...) abort
 endfunction
 
 function! s:GetEditCommandAutocomplete(arg_lead, cmd_line, cursor_pos)
-    return ['edit', 'tab edit', 'drop', 'tab drop', 'split', 'vsplit',]
+    return ['edit', 'tabedit', 'drop', 'tab drop', 'split', 'vsplit',]
 endfunction
 
 command! -nargs=? -complete=customlist,s:GetEditCommandAutocomplete BrootCurrentDirectory call g:OpenBrootIn("%:p:h", <f-args>)
