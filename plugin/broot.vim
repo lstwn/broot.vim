@@ -43,7 +43,7 @@ function! g:OpenBrootIn(...) abort
     endtry
 endfunction
 
-function! g:GetEditCommandAutocomplete(arg_lead, cmd_line, cursor_pos)
+function! GetEditCommandAutocomplete(arg_lead, cmd_line, cursor_pos)
     return ['edit', 'tab edit', 'drop', 'tab drop', 'split', 'vsplit',]
 endfunction
 
