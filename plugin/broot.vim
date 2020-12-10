@@ -47,9 +47,9 @@ function! g:GetEditCommandAutocomplete(arg_lead, cmd_line, cursor_pos)
     return ['edit', 'tab edit', 'drop', 'tab drop', 'split', 'vsplit',]
 endfunction
 
-command! -nargs=? -complete=customList,g:GetEditCommandAutocomplete BrootCurrentDirectory call g:OpenBrootIn("%:p:h", <f-args>)
-command! -nargs=? -complete=customList,g:GetEditCommandAutocomplete BrootWorkingDirectory call g:OpenBrootIn(".", <f-args>)
-command! -nargs=? -complete=customList,g:GetEditCommandAutocomplete BrootHomeDirectory call g:OpenBrootIn("~", <f-args>)
+command! -nargs=? -complete=customList,GetEditCommandAutocomplete BrootCurrentDirectory call g:OpenBrootIn("%:p:h", <f-args>)
+command! -nargs=? -complete=customList,GetEditCommandAutocomplete BrootWorkingDirectory call g:OpenBrootIn(".", <f-args>)
+command! -nargs=? -complete=customList,GetEditCommandAutocomplete BrootHomeDirectory call g:OpenBrootIn("~", <f-args>)
 command! -nargs=* -complete=dir Broot call g:OpenBrootIn(<f-args>)
 
 " Open Broot in the directory passed by argument
