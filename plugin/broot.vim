@@ -17,9 +17,6 @@ let s:broot_vim_conf = get(g:, 'broot_vim_conf', [
 call writefile(s:broot_vim_conf, s:broot_vim_conf_path)
 
 let s:broot_command = get(g:, 'broot_command', 'br')
-if !executable(s:broot_command)
-    throw "[Broot.vim] Error: Broot command '".s:broot_command."'not found. You might need to set 'g:broot_command'."
-endif
 let s:broot_exec = s:broot_command." --conf '".s:broot_conf_paths."'"
 
 let s:broot_default_edit_command = get(g:, 'broot_default_edit_command', 'edit')
