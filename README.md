@@ -20,11 +20,22 @@ Then try `:Broot` in vim which opens broot in vim's current working directory.
 
 ## Customization and Usage
 
-Other than the three commands `:BrootCurrentDirectory`, `:BrootWorkingDirectory`
-and `:Broot` (which links to the previous command), this plugin does no mappings
+Other than the four commands `:BrootCurrentDirectory`, `:BrootWorkingDirectory`
+`:BrootHomeDirectory` and `:Broot`, this plugin does no mappings
 at all or defines any further commands.
 
-Hence, you might want to set in your `.vimrc`:
+Here are the arguments to the commands (all args are optional):
+```
+:Broot <directory> <edit_command>      " supports autocomplete only for directory arg
+:BrootHomeDirectory <edit_command>     " supports autocomplete for edit_command arg
+:BrootCurrentDirectory <edit_command>  " supports autocomplete for edit_command arg
+:BrootWorkingDirectory <edit_command>  " supports autocomplete for edit_command arg
+
+<edit_command> defaults to g:broot_default_edit_command.
+<directory> defaults to the current working directory.
+```
+
+You might want to set in your `.vimrc`:
 
 ```{vim}
 " I highly recommend setting something like this:
@@ -34,8 +45,6 @@ nnoremap <silent> - :BrootCurrentDirectory<CR>
 " you might want to:
 command! BrootWorkingDirectoryNewTab call g:OpenBrootIn(".", "tabedit")
 " but you could also do ':Broot . tabedit' as a command!
-" i.e. ':Broot <dirname> <edit_command>' with both args being optional.
-" ':Broot' opens current working directory with g:broot_default_edit_command.
 
 " adjust path to config (this defaults to '~/.config/broot/conf.toml'):
 let g:broot_default_conf_path = "<path/to/broot/conf.toml>"
