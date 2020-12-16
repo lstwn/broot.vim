@@ -20,11 +20,12 @@ let s:broot_command = get(g:, 'broot_command', 'br')
 let s:broot_exec = s:broot_command." --conf '".s:broot_conf_paths."'"
 
 let s:broot_default_edit_command = get(g:, 'broot_default_edit_command', 'edit')
+let s:broot_default_explore_path = get(g:, 'broot_default_explore_path', '.')
 
 " Opens broot in the given path and opens the file(s) according to edit_cmd
 function! g:OpenBrootIn(...) abort
     let l:edit_cmd = get(a:, 2, s:broot_default_edit_command)
-    let l:path = expand(get(a:, 1, "."))
+    let l:path = expand(get(a:, 1, s:broot_default_explore_path))
     let l:out_file = tempname()
     try
         silent execute '!'.s:broot_exec." --out '".l:out_file."' ".l:path
@@ -50,6 +51,9 @@ endfunction
 command! -nargs=? -complete=customlist,g:GetEditCommandAutocomplete BrootCurrentDirectory call g:OpenBrootIn("%:p:h", <f-args>)
 command! -nargs=? -complete=customlist,g:GetEditCommandAutocomplete BrootWorkingDirectory call g:OpenBrootIn(".", <f-args>)
 command! -nargs=? -complete=customlist,g:GetEditCommandAutocomplete BrootHomeDirectory call g:OpenBrootIn("~", <f-args>)
+command! -nargs=? -complete=dir BrootHorizontalSplit call g:OpenBrootIn(<f-args>, 'split')
+command! -nargs=? -complete=dir BrootVerticalSplit call g:OpenBrootIn(<f-args>, 'vsplit')
+command! -nargs=? -complete=dir BrootTab call g:OpenBrootIn(<f-args>, 'tabedit')
 command! -nargs=* -complete=dir Broot call g:OpenBrootIn(<f-args>)
 
 " Open Broot in the directory passed by argument
@@ -65,4 +69,8 @@ if exists('g:broot_replace_netrw') && g:broot_replace_netrw
         autocmd VimEnter * silent! autocmd! FileExplorer
         autocmd BufEnter * if isdirectory(expand("%")) | call s:OpenBrootOnVimLoadDir("%") | endif
     augroup END
+    command! -nargs=0 Explore  call g:OpenBrootIn(s:broot_default_explore_path, 'edit')
+    command! -nargs=0 Hexplore call g:OpenBrootIn(s:broot_default_explore_path, 'split')
+    command! -nargs=0 Vexplore call g:OpenBrootIn(s:broot_default_explore_path, 'vsplit')
+    command! -nargs=0 Texplore call g:OpenBrootIn(s:broot_default_explore_path, 'tabedit')
 endif
