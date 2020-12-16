@@ -75,8 +75,16 @@ if exists('g:broot_replace_netrw') && g:broot_replace_netrw
         autocmd VimEnter * silent! autocmd! FileExplorer
         autocmd BufEnter * if isdirectory(expand("%")) | call s:OpenBrootOnVimLoadDir("%") | endif
     augroup END
-    command! -nargs=? -complete=dir Explore  call g:OpenBrootWithEditCmdInPath('edit', <f-args>)
-    command! -nargs=? -complete=dir Hexplore call g:OpenBrootWithEditCmdInPath('split', <f-args>)
-    command! -nargs=? -complete=dir Vexplore call g:OpenBrootWithEditCmdInPath('vsplit', <f-args>)
-    command! -nargs=? -complete=dir Texplore call g:OpenBrootWithEditCmdInPath('tabedit', <f-args>)
+    if !exists(':Explore')
+        command! -nargs=? -complete=dir Explore  call g:OpenBrootWithEditCmdInPath('edit', <f-args>)
+    endif
+    if !exists(':Hexplore')
+        command! -nargs=? -complete=dir Hexplore call g:OpenBrootWithEditCmdInPath('split', <f-args>)
+    endif
+    if !exists(':Vexplore')
+        command! -nargs=? -complete=dir Vexplore call g:OpenBrootWithEditCmdInPath('vsplit', <f-args>)
+    endif
+    if !exists(':Texplore')
+        command! -nargs=? -complete=dir Texplore call g:OpenBrootWithEditCmdInPath('tabedit', <f-args>)
+    endif
 endif
