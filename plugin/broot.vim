@@ -22,13 +22,7 @@ let s:broot_exec = s:broot_command." --conf '".s:broot_conf_paths."'"
 let s:broot_default_edit_command = get(g:, 'broot_default_edit_command', 'edit')
 let s:broot_default_explore_path = get(g:, 'broot_default_explore_path', '.')
 
-function! g:OpenBrootWithEditCmdInPath(...) abort
-    let l:edit_cmd = get(a:, 1, s:broot_default_edit_command)
-    let l:path = get(a:, 2, s:broot_default_explore_path)
-    call g:OpenBrootInPathWithEditCmd(l:path, l:edit_cmd)
-endfunction
-
-" Opens broot in the given path and opens the file(s) according to edit_cmd
+" Opens broot in the given path with the given edit_cmd
 function! g:OpenBrootInPathWithEditCmd(...) abort
     let l:path = expand(get(a:, 1, s:broot_default_explore_path))
     let l:edit_cmd = get(a:, 2, s:broot_default_edit_command)
@@ -48,6 +42,14 @@ function! g:OpenBrootInPathWithEditCmd(...) abort
     finally
         redraw!
     endtry
+endfunction
+
+" Opens broot with the given edit_cmd in the given path (simply reversing
+" argument order)
+function! g:OpenBrootWithEditCmdInPath(...) abort
+    let l:edit_cmd = get(a:, 1, s:broot_default_edit_command)
+    let l:path = get(a:, 2, s:broot_default_explore_path)
+    call g:OpenBrootInPathWithEditCmd(l:path, l:edit_cmd)
 endfunction
 
 function! g:GetEditCommandAutocomplete(arg_lead, cmd_line, cursor_pos)
@@ -75,16 +77,16 @@ if exists('g:broot_replace_netrw') && g:broot_replace_netrw
         autocmd VimEnter * silent! autocmd! FileExplorer
         autocmd BufEnter * if isdirectory(expand("%")) | call s:OpenBrootOnVimLoadDir("%") | endif
     augroup END
-    if !exists(':Explore')
+    if exists(':Explore') != 2
         command! -nargs=? -complete=dir Explore  call g:OpenBrootWithEditCmdInPath('edit', <f-args>)
     endif
-    if !exists(':Hexplore')
+    if exists(':Hexplore') != 2
         command! -nargs=? -complete=dir Hexplore call g:OpenBrootWithEditCmdInPath('split', <f-args>)
     endif
-    if !exists(':Vexplore')
+    if exists(':Vexplore') != 2
         command! -nargs=? -complete=dir Vexplore call g:OpenBrootWithEditCmdInPath('vsplit', <f-args>)
     endif
-    if !exists(':Texplore')
+    if exists(':Texplore') != 2
         command! -nargs=? -complete=dir Texplore call g:OpenBrootWithEditCmdInPath('tabedit', <f-args>)
     endif
 endif
