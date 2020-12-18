@@ -36,10 +36,10 @@ function! g:OpenBrootInPathWithEditCmd(...) abort
             endfor
             call delete(l:out_file)
         endif
-        filetype detect
     catch
         echoerr "[Broot.vim] Error: " . v:exception
     finally
+        filetype detect
         redraw!
     endtry
 endfunction
