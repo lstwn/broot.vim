@@ -66,7 +66,7 @@ command! -nargs=* -complete=dir Broot call g:OpenBrootInPathWithEditCmd(<f-args>
 
 " Open Broot in the directory passed by argument
 function! s:OpenBrootOnVimLoadDir(argv_path) abort
-    " resolve path before % changes to something else after buffer deletion
+    " resolve path before '%' changes to something else after buffer deletion
     let l:path = expand(a:argv_path)
     " Delete empty buffer created by vim
     bdelete!
@@ -77,7 +77,7 @@ endfunction
 if exists('g:broot_replace_netrw') && g:broot_replace_netrw
     augroup broot_replace_netrw
         autocmd VimEnter * silent! autocmd! FileExplorer
-        autocmd BufEnter * if isdirectory(expand("%")) | call s:OpenBrootOnVimLoadDir("%") | endif
+        autocmd BufEnter * if isdirectory(expand("%")) | bdelete! | call g:OpenBrootInPathWithEditCmd(expand("%"), "edit") | endif
     augroup END
     if exists(':Explore') != 2
         command! -nargs=? -complete=dir Explore  call g:OpenBrootWithEditCmdInPath('edit', <f-args>)
