@@ -66,9 +66,11 @@ command! -nargs=* -complete=dir Broot call g:OpenBrootInPathWithEditCmd(<f-args>
 
 " Open Broot in the directory passed by argument
 function! s:OpenBrootOnVimLoadDir(argv_path) abort
+    " resolve path before % changes to something else after buffer deletion
+    let l:path = expand(a:argv_path)
     " Delete empty buffer created by vim
     bdelete!
-    call g:OpenBrootInPathWithEditCmd(a:argv_path, 'edit')
+    call g:OpenBrootInPathWithEditCmd(l:path, 'edit')
 endfunction
 
 " To open broot when vim loads a directory
