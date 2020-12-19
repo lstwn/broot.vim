@@ -26,6 +26,10 @@ This plugin is vim only (sorry, neovim) and is not tested on Windows.
 Also, it relies on the terminal feature of vim 8.
 If this is not present, the plugin will not work.
 
+---
+
+The plugin changed quite a lot recently, but should now be stable (from 12/2020).
+
 ## Customization
 
 ### Configuration
