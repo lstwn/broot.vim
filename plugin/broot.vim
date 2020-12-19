@@ -77,7 +77,7 @@ endfunction
 if exists('g:broot_replace_netrw') && g:broot_replace_netrw
     augroup broot_replace_netrw
         autocmd VimEnter * silent! autocmd! FileExplorer
-        autocmd BufEnter * if isdirectory(expand("%")) | bdelete! | call g:OpenBrootInPathWithEditCmd(expand("%"), "edit") | endif
+        autocmd BufEnter * if isdirectory(expand("%")) | call g:OpenBrootInPathWithEditCmd(expand("%"), "edit") | bdelete! # | endif
     augroup END
     if exists(':Explore') != 2
         command! -nargs=? -complete=dir Explore  call g:OpenBrootWithEditCmdInPath('edit', <f-args>)
