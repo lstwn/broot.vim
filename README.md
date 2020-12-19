@@ -16,61 +16,58 @@ Use your favourite vim plugin manager. For instance, with `vim-plug`:
 Plug 'https://gitlab.com/lstwn/broot.vim'
 ```
 
-Then try `:Broot` in vim which opens broot in vim's current working directory.
+Then try `:Broot` in vim which opens broot in vim's current working directory
+and in the current window
+(if not configured differently, see below).
 
-## Customization and Usage
+## Compatibility
 
-Here are the defined commands and its arguments (all args are optional):
+This plugin is vim only (sorry, neovim) and is not tested on Windows.
+Also, it relies on the terminal feature of vim 8.
+If this is not present, the plugin will not work.
+
+## Customization
+
+### Configuration
+
+| variable name                  | description                                                                          | default value                                                                         |
+|--------------------------------|--------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| `g:broot_default_conf_path`    | path to broot's default `conf.toml`                                                  | `expand('~/.config/broot/conf.toml')`                                                 |
+| `g:broot_vim_conf`             | appended broot config (list of lines)                                                | `[ '[[verbs]]', 'key = "enter"', 'execution = ":print_path"', 'apply_to = "file"', ]` |
+| `g:broot_command`              | broot launch command                                                                 | `br`
+| `g:broot_shell_command`        | command to launch a shell with command flag (leave empty to run broot without shell) | `&shell.' -c'`                                                                        |
+| `g:broot_default_explore_path` | default path to explore                                                              | `.`                                                                                   |
+| `g:broot_replace_netrw`        | set to TRUE (e.g. 1) if you want to replace netrw (see below)                        | off                                                                                   |
+
+### Commands
+
+Here are the defined commands:
+
 ```
-:Broot <directory> <edit_command>      " supports autocomplete only for directory arg
-:BrootHomeDirectory <edit_command>     " supports autocomplete for edit_command arg
-:BrootCurrentDirectory <edit_command>  " supports autocomplete for edit_command arg
-:BrootWorkingDirectory <edit_command>  " supports autocomplete for edit_command arg
-:BrootTab <directory>                  " supports autocomplete for directory
-:BrootHorizontalSplit <directory>      " supports autocomplete for directory
-:BrootVerticalSplit <directory>        " supports autocomplete for directory
-
-<edit_command> defaults to g:broot_default_edit_command.
-<directory> defaults to g:broot_default_explore_path.
+command! -nargs=? -complete=command Broot           call g:OpenBrootInPathInWindow(s:broot_default_explore_path, <f-args>)
+command! -nargs=? -complete=command BrootCurrentDir call g:OpenBrootInPathInWindow("%:p:h", <f-args>)
+command! -nargs=? -complete=command BrootWorkingDir call g:OpenBrootInPathInWindow(".", <f-args>)
+command! -nargs=? -complete=command BrootHomeDir    call g:OpenBrootInPathInWindow("~", <f-args>)
 ```
+
+Command should be a split command, e.g. `:Broot vsplit` or `:Broot tab split`.
+
+### Hijacking netrw
+
+If you set `let g:broot_replace_netrw = 1` in your `.vimrc`,
+netrw will not launch anymore if you open a folder but instead broot.
+
+If you *additionally* set `let g:loaded_netrwPlugin = 1` in your `.vimrc`,
+not only will netrw not be loaded anymore *at all* but also the commands
+`:Explore`, `:Texplore`, `:Vexplore` and `:Hexplore` are replaced wth broot alternatives.
+
+### Tip
 
 You might want to set in your `.vimrc`:
 
 ```{vim}
-" I highly recommend setting something like this:
-nnoremap <silent> <leader>e :BrootWorkingDirectory<CR>
-nnoremap <silent> - :BrootCurrentDirectory<CR>
-
-" you might want to:
-command! BrootWorkingDirectoryTab call g:OpenBrootIn(".", "tabedit")
-" but you could also do ':Broot . tabedit' as a command!
-
-" adjust path to config (this defaults to '~/.config/broot/conf.toml'):
-let g:broot_default_conf_path = "<path/to/broot/conf.toml>"
-
-" set this to replace netrw with broot (off per default):
-let g:broot_replace_netrw = 1
-" set this to even completely disable netrw and enable to have
-" :Explore, :Texplore, :Vexplore and Hexplore set to broot alternatives
-let g:loaded_netrwPlugin = 1
-
-" if you want to change the config that is appended on top of your regular
-" broot conf.toml set this array of strings (default shown):
-let g:broot_vim_conf = [
-            \ '[[verbs]]',
-            \ 'key = "enter"',
-            \ 'execution = ":print_path"',
-            \ 'apply_to = "file"',
-            \ ]
-
-" adjust broot command with (this defaults to 'br'):
-let g:broot_command = 'br'
-
-" adjust default edit/open command (this defaults to 'edit'):
-let g:broot_default_edit_command = 'tabedit'
-
-" adjust default path (this defaults to the current working directory '.'):
-let g:broot_default_explore_path = '~'
+nnoremap <silent> <leader>e :BrootWorkingDir<CR>
+nnoremap <silent> - :BrootCurrentDir<CR>
 ```
 
 ## Thanks
