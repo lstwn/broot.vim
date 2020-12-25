@@ -21,6 +21,8 @@ let s:broot_vim_conf = get(g:, 'broot_vim_conf', [
 
 call writefile(s:broot_vim_conf, s:broot_vim_conf_path)
 
+let s:broot_open_commmand = get(g:, 'broot_open_commmand', 'xdg-open')
+let s:broot_external_open_file_extensions = get(g:, 'broot_external_open_file_extensions', ['pdf'])
 let s:broot_command = get(g:, 'broot_command', 'br')
 let s:broot_shell_command = get(g:, 'broot_shell_command', &shell.' '.&shellcmdflag)
 let s:broot_exec = s:broot_command." --conf '".s:broot_conf_paths."'"
@@ -34,7 +36,13 @@ function! g:ReadBrootOutPath(job, exit)
         if (filereadable(s:out_file))
             for l:file in readfile(s:out_file)
                 let l:file = fnamemodify(l:file, ":~:.")
-                execute 'edit '.l:file
+                let l:file_extension = fnamemodify(l:file, ':e')
+                if index(s:broot_external_open_file_extensions, l:file_extension) >= 0
+                    silent execute '!'.s:broot_open_commmand.' '.l:file
+                    redraw!
+                else
+                    execute 'edit '.l:file
+                endif
             endfor
             call delete(s:out_file)
         endif

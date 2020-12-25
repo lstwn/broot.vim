@@ -34,14 +34,16 @@ The plugin changed quite a lot recently, but should now be stable (from 12/2020)
 
 ### Configuration
 
-| variable name                  | description                                                                          | default value                                                                         |
-|--------------------------------|--------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
-| `g:broot_default_conf_path`    | path to broot's default `conf.toml`                                                  | `expand('~/.config/broot/conf.toml')`                                                 |
-| `g:broot_vim_conf`             | appended broot config (list of lines)                                                | `[ '[[verbs]]', 'key = "enter"', 'execution = ":print_path"', 'apply_to = "file"', ]` |
-| `g:broot_command`              | broot launch command                                                                 | `br`
-| `g:broot_shell_command`        | command to launch a shell with command flag (leave empty to run broot without shell) | `&shell.' '.&shellcmdflag`                                                                        |
-| `g:broot_default_explore_path` | default path to explore                                                              | `.`                                                                                   |
-| `g:broot_replace_netrw`        | set to TRUE (e.g. 1) if you want to replace netrw (see below)                        | off                                                                                   |
+| variable name                           | description                                                                                                 | default value                                                                         |
+|-----------------------------------------|-------------------------------------------------------------------------------------------------------------|---------------------------------------------------------------------------------------|
+| `g:broot_default_conf_path`             | path to broot's default `conf.toml`                                                                         | `expand('~/.config/broot/conf.toml')`                                                 |
+| `g:broot_vim_conf`                      | appended broot config (list of lines)                                                                       | `[ '[[verbs]]', 'key = "enter"', 'execution = ":print_path"', 'apply_to = "file"', ]` |
+| `g:broot_command`                       | broot launch command                                                                                        | `br`
+| `g:broot_shell_command`                 | command to launch a shell with command flag (leave empty to run broot without shell)                        | `&shell.' '.&shellcmdflag`                                                            |
+| `g:broot_open_command`                  | open command for files with an ending that matches one specified in `g:broot_external_open_file_extensions` | `xdg-open`                                                                            |
+| `g:broot_external_open_file_extensions` | list of file extensions that are opened with `g:broot_open_command`                                         | `['pdf']`                                                                                  |
+| `g:broot_default_explore_path`          | default path to explore                                                                                     | `.`                                                                                   |
+| `g:broot_replace_netrw`                 | set to TRUE (e.g. 1) if you want to replace netrw (see below)                                               | off                                                                                   |
 
 ### Commands
 
