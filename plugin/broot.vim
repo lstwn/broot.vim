@@ -29,26 +29,39 @@ let s:broot_exec = s:broot_command." --conf '".s:broot_conf_paths."'"
 let s:broot_default_explore_path = get(g:, 'broot_default_explore_path', '.')
 
 let s:out_file = ''
+let s:current_buffer = 0
+let s:alternate_buffer = 0
+let s:is_current_window = 0
 
 function! g:ReadBrootOutPath(job, exit)
     let l:buffer_number = ch_getbufnr(a:job, 'out')
     try
+        let l:aborted = 1
         if (filereadable(s:out_file))
             for l:file in readfile(s:out_file)
                 let l:file = fnamemodify(l:file, ":~:.")
                 let l:file_extension = fnamemodify(l:file, ':e')
                 if index(s:broot_external_open_file_extensions, l:file_extension) >= 0
-                    silent execute '!'.s:broot_open_commmand.' '.l:file
+                    silent execute '!'.s:broot_open_commmand.' '.l:file.' 2>/dev/null'
                     redraw!
                 else
                     execute 'edit '.l:file
                 endif
+                let l:aborted = 0
             endfor
             call delete(s:out_file)
         endif
     catch
         echoerr '[Broot.vim] Error: '.v:exception
     finally
+        if l:aborted
+            if s:is_current_window
+                silent execute 'buffer '.s:current_buffer
+            endif
+            let @# = s:alternate_buffer
+        else
+            let @# = s:current_buffer
+        endif
         if bufexists(l:buffer_number)
             silent execute 'bwipeout! '.l:buffer_number
         endif
@@ -61,10 +74,18 @@ function! g:OpenBrootInPathInWindow(...) abort
     let l:window = get(a:, 2, '')
     let s:out_file = tempname()
     let l:broot_exec = s:broot_shell_command.' "'.s:broot_exec." --out '".s:out_file."' ".l:path.'"'
-    execute l:window
+    if l:window ==# ''
+        let s:is_current_window = 1
+    else
+        execute l:window
+        let s:is_current_window = 0
+    endif
+    let s:current_buffer = bufnr(@%)
+    let s:alternate_buffer = bufnr(@#)
+    " keepalt does not work here apparently (due to function call instead of
+    " a command, c.f. :h alternate-file)
     let l:buffer_number = term_start(l:broot_exec, {
                 \ "term_name": s:broot_command,
-                \ "term_kill": "term",
                 \ "curwin": 1,
                 \ "exit_cb": "g:ReadBrootOutPath",
                 \ "norestore": 1,
