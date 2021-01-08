@@ -46,8 +46,8 @@ function! g:ReadBrootOutPath(job, exit)
                     redraw!
                 else
                     execute 'edit '.l:file
+                    let l:aborted = 0
                 endif
-                let l:aborted = 0
             endfor
             call delete(s:out_file)
         endif
