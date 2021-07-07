@@ -3,7 +3,15 @@ if exists("g:loaded_broot") || &compatible
 endif
 let g:loaded_broot = 1
 
-if !exists(':terminal')
+function! s:IsCompatible()
+    if has('nvim')
+        return has('nvim-0.3.0')
+    else
+        return has('terminal')
+    endif
+endfunction
+
+if !s:IsCompatible()
     echoerr '[Broot.vim] Error: (n)VIM version not compatible due to lack of terminal support.'
     finish
 endif
