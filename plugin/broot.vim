@@ -119,6 +119,7 @@ function! s:OpenTerminal(cmd) abort
         let s:terminal_buffer = bufnr()
         " for a clean terminal (the TermOpen autocmd does not work when
         " starting nvim with a directory)
+        startinsert
         setlocal nonumber norelativenumber signcolumn=no colorcolumn=0
     else
         let s:terminal_buffer = term_start(a:cmd, {
