@@ -3,14 +3,14 @@ if exists("g:loaded_broot") || &compatible
 endif
 let g:loaded_broot = 1
 
-if !has('terminal')
-    echoerr '[Broot.vim] Error: Vim version not compatible due to lack of terminal support.'
+if !exists(':terminal')
+    echoerr '[Broot.vim] Error: (n)VIM version not compatible due to lack of terminal support.'
     finish
 endif
 
 let s:broot_default_conf_path = get(g:, 'broot_default_conf_path', expand('~/.config/broot/conf.toml'))
-let s:broot_vim_conf_path = fnamemodify(resolve(expand('<sfile>:p')), ':h:h').'/broot.toml'
-let s:broot_conf_paths = s:broot_default_conf_path.';'.s:broot_vim_conf_path
+let s:broot_vim_conf_path = fnamemodify(resolve(expand('<sfile>:p')), ':h:h') . '/broot.toml'
+let s:broot_conf_paths = s:broot_default_conf_path . ';' . s:broot_vim_conf_path
 
 let s:broot_vim_conf = get(g:, 'broot_vim_conf', [
             \ '[[verbs]]',
@@ -24,8 +24,8 @@ call writefile(s:broot_vim_conf, s:broot_vim_conf_path)
 let s:broot_open_commmand = get(g:, 'broot_open_commmand', 'xdg-open')
 let s:broot_external_open_file_extensions = get(g:, 'broot_external_open_file_extensions', ['pdf'])
 let s:broot_command = get(g:, 'broot_command', 'br')
-let s:broot_shell_command = get(g:, 'broot_shell_command', &shell.' '.&shellcmdflag)
-let s:broot_exec = s:broot_command." --conf '".s:broot_conf_paths."'"
+let s:broot_shell_command = get(g:, 'broot_shell_command', &shell . ' ' . &shellcmdflag)
+let s:broot_exec = s:broot_command . " --conf '" . s:broot_conf_paths . "'"
 let s:broot_default_explore_path = get(g:, 'broot_default_explore_path', '.')
 
 let s:out_file = ''
@@ -33,8 +33,37 @@ let s:current_buffer = 0
 let s:alternate_buffer = 0
 let s:is_current_window = 0
 
+function! g:OnExitNvim(job_id, code, event)
+    if a:code == 0
+        bwipeout!
+    endif
+    let l:aborted = 1
+    if (filereadable(s:out_file))
+        for l:file in readfile(s:out_file)
+            let l:file = fnamemodify(l:file, ":~:.")
+            let l:file_extension = fnamemodify(l:file, ':e')
+            if index(s:broot_external_open_file_extensions, l:file_extension) >= 0
+                silent execute '!' . s:broot_open_commmand . ' ' . l:file . ' 2>/dev/null'
+                redraw!
+            else
+                execute 'edit ' . l:file
+                let l:aborted = 0
+            endif
+        endfor
+        call delete(s:out_file)
+    endif
+    if l:aborted
+        let @# = s:alternate_buffer
+    else
+        let @# = s:current_buffer
+    endif
+endfunction
+
 function! g:ReadBrootOutPath(job, exit)
     let l:buffer_number = ch_getbufnr(a:job, 'out')
+    if bufexists(l:buffer_number)
+        silent execute 'bwipeout! ' . l:buffer_number
+    endif
     try
         let l:aborted = 1
         if (filereadable(s:out_file))
@@ -62,10 +91,26 @@ function! g:ReadBrootOutPath(job, exit)
         else
             let @# = s:current_buffer
         endif
-        if bufexists(l:buffer_number)
-            silent execute 'bwipeout! '.l:buffer_number
-        endif
     endtry
+endfunction
+
+function! s:OpenTerminal(cmd) abort
+    if has('nvim')
+        " do not replace the current buffer
+        enew
+        let l:job_id = termopen(a:cmd, {
+                    \ "on_exit": "g:OnExitNvim",
+                    \})
+        " rename the terminal buffer name different than the long gibberish
+        execute 'file ' . s:broot_command
+    else
+        let l:buffer_number = term_start(a:cmd, {
+                    \ "term_name": s:broot_command,
+                    \ "curwin": 1,
+                    \ "exit_cb": "g:ReadBrootOutPath",
+                    \ "norestore": 1,
+                    \})
+    endif
 endfunction
 
 " opens broot in the given path and in the given (split) window command
@@ -84,12 +129,7 @@ function! g:OpenBrootInPathInWindow(...) abort
     let s:alternate_buffer = bufnr(@#)
     " keepalt does not work here apparently (due to function call instead of
     " a command, c.f. :h alternate-file)
-    let l:buffer_number = term_start(l:broot_exec, {
-                \ "term_name": s:broot_command,
-                \ "curwin": 1,
-                \ "exit_cb": "g:ReadBrootOutPath",
-                \ "norestore": 1,
-                \})
+    call s:OpenTerminal(l:broot_exec)
 endfunction
 
 " opens broot in the given (split) window command and in the given path
