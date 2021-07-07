@@ -37,14 +37,12 @@ let s:broot_exec = s:broot_command . " --conf '" . s:broot_conf_paths . "'"
 let s:broot_default_explore_path = get(g:, 'broot_default_explore_path', '.')
 
 let s:out_file = ''
+let s:terminal_buffer = 0
 let s:current_buffer = 0
 let s:alternate_buffer = 0
 let s:is_current_window = 0
 
 function! g:OnExitNvim(job_id, code, event)
-    if a:code == 0
-        bwipeout!
-    endif
     let l:aborted = 1
     if (filereadable(s:out_file))
         for l:file in readfile(s:out_file)
@@ -61,17 +59,20 @@ function! g:OnExitNvim(job_id, code, event)
         call delete(s:out_file)
     endif
     if l:aborted
+        " order is important: first switch to old buffer, *then* update
+        " alternate buffer
+        execute 'buffer ' . s:current_buffer
         let @# = s:alternate_buffer
     else
         let @# = s:current_buffer
+    endif
+    if a:code == 0 && bufexists(s:terminal_buffer)
+        execute 'bwipeout! ' . s:terminal_buffer
     endif
 endfunction
 
 function! g:ReadBrootOutPath(job, exit)
     let l:buffer_number = ch_getbufnr(a:job, 'out')
-    if bufexists(l:buffer_number)
-        silent execute 'bwipeout! ' . l:buffer_number
-    endif
     try
         let l:aborted = 1
         if (filereadable(s:out_file))
@@ -99,6 +100,9 @@ function! g:ReadBrootOutPath(job, exit)
         else
             let @# = s:current_buffer
         endif
+        if bufexists(l:buffer_number)
+            silent execute 'bwipeout! ' . l:buffer_number
+        endif
     endtry
 endfunction
 
@@ -109,10 +113,12 @@ function! s:OpenTerminal(cmd) abort
         let l:job_id = termopen(a:cmd, {
                     \ "on_exit": "g:OnExitNvim",
                     \})
-        " rename the terminal buffer name different than the long gibberish
+        " rename the terminal buffer name to
+        " something more readable than the long gibberish
         execute 'file ' . s:broot_command
+        let s:terminal_buffer = bufnr()
     else
-        let l:buffer_number = term_start(a:cmd, {
+        let s:terminal_buffer = term_start(a:cmd, {
                     \ "term_name": s:broot_command,
                     \ "curwin": 1,
                     \ "exit_cb": "g:ReadBrootOutPath",
@@ -135,8 +141,8 @@ function! g:OpenBrootInPathInWindow(...) abort
     endif
     let s:current_buffer = bufnr(@%)
     let s:alternate_buffer = bufnr(@#)
-    " keepalt does not work here apparently (due to function call instead of
-    " a command, c.f. :h alternate-file)
+    " keepalt does not work here apparently
+    " (due to function call instead of a command, c.f. :h alternate-file)
     call s:OpenTerminal(l:broot_exec)
 endfunction
 
