@@ -117,6 +117,9 @@ function! s:OpenTerminal(cmd) abort
         " something more readable than the long gibberish
         execute 'file ' . s:broot_command
         let s:terminal_buffer = bufnr()
+        " for a clean terminal (the TermOpen autocmd does not work when
+        " starting nvim with a directory)
+        setlocal nonumber norelativenumber signcolumn=no colorcolumn=0
     else
         let s:terminal_buffer = term_start(a:cmd, {
                     \ "term_name": s:broot_command,
