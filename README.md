@@ -13,7 +13,7 @@ mentioned enter behavior is appended to your defaults!
 Use your favourite vim plugin manager. For instance, with `vim-plug`:
 
 ```
-Plug 'https://gitlab.com/lstwn/broot.vim'
+Plug 'lstwn/broot.vim'
 ```
 
 Then try `:Broot` in vim which opens broot in vim's current working directory
