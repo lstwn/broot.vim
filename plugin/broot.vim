@@ -64,7 +64,9 @@ function! g:OnExitNvim(job_id, code, event)
         execute 'buffer ' . s:current_buffer
         let @# = s:alternate_buffer
     else
-        let @# = s:current_buffer
+        if bufexists(s:current_buffer)
+            let @# = s:current_buffer
+        endif
     endif
     if a:code == 0 && bufexists(s:terminal_buffer)
         execute 'bwipeout! ' . s:terminal_buffer
@@ -98,7 +100,9 @@ function! g:ReadBrootOutPath(job, exit)
             endif
             let @# = s:alternate_buffer
         else
-            let @# = s:current_buffer
+            if bufexists(s:current_buffer)
+                let @# = s:current_buffer
+            endif
         endif
         if bufexists(l:buffer_number)
             silent execute 'bwipeout! ' . l:buffer_number
