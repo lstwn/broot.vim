@@ -22,9 +22,8 @@ and in the current window
 
 ## Compatibility
 
-This plugin is vim only (sorry, neovim) and is not tested on Windows.
-Also, it relies on the terminal feature of vim 8.
-If this is not present, the plugin will not work.
+This plugin is not tested on Windows. It requires Vim 8 (and its terminal
+feature) or Neovim >=0.3.0.
 
 ---
 
