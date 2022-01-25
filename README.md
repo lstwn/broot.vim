@@ -1,4 +1,4 @@
-# broot.(n)vim 
+# broot.vim 
 
 > lightweight [broot](https://github.com/Canop/broot) integration plugin for neovim/vim
 
