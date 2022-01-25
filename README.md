@@ -1,4 +1,6 @@
-# broot.(n)vim lightweight [broot](https://github.com/Canop/broot) integration plugin for neovim/vim
+# broot.(n)vim 
+
+> lightweight [broot](https://github.com/Canop/broot) integration plugin for neovim/vim
 
 A tiny plugin that integrates [broot](https://github.com/Canop/broot) with neovim/vim.
 Broot is configured in such a way that when pressing enter *on a file* this file
