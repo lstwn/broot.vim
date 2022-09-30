@@ -19,20 +19,18 @@ endif
 let s:broot_default_conf_path = get(g:, 'broot_default_conf_path', expand('~/.config/broot/conf.toml'))
 let s:broot_vim_conf_path = fnamemodify(resolve(expand('<sfile>:p')), ':h:h') . '/broot.toml'
 let s:broot_conf_paths = s:broot_default_conf_path . ';' . s:broot_vim_conf_path
-
 let s:broot_vim_conf = get(g:, 'broot_vim_conf', [
             \ '[[verbs]]',
             \ 'key = "enter"',
             \ 'execution = ":print_path"',
             \ 'apply_to = "file"',
             \ ])
-
 call writefile(s:broot_vim_conf, s:broot_vim_conf_path)
-
 let s:broot_open_commmand = get(g:, 'broot_open_commmand', 'xdg-open')
 let s:broot_external_open_file_extensions = get(g:, 'broot_external_open_file_extensions', ['pdf'])
-let s:broot_command = get(g:, 'broot_command', 'br')
-let s:broot_shell_command = get(g:, 'broot_shell_command', &shell . ' ' . &shellcmdflag)
+let s:broot_command = get(g:, 'broot_command', 'broot')
+let s:broot_shell_command = get(g:, 'broot_shell_command', 'sh -c')
+let s:broot_redirect_command = get(g:, 'broot_redirect_command', '>')
 let s:broot_exec = s:broot_command . " --conf '" . s:broot_conf_paths . "'"
 let s:broot_default_explore_path = get(g:, 'broot_default_explore_path', '.')
 
@@ -61,10 +59,16 @@ function! g:OnExitNvim(job_id, code, event)
     if l:aborted
         " order is important: first switch to old buffer, *then* update
         " alternate buffer
-        execute 'buffer ' . s:current_buffer
-        let @# = s:alternate_buffer
+        if bufexists(s:current_buffer)
+            execute 'buffer ' . s:current_buffer
+        endif
+        if bufexists(s:alternate_buffer)
+            let @# = s:alternate_buffer
+        endif
     else
-        let @# = s:current_buffer
+        if bufexists(s:current_buffer)
+            let @# = s:current_buffer
+        endif
     endif
     if a:code == 0 && bufexists(s:terminal_buffer)
         execute 'bwipeout! ' . s:terminal_buffer
@@ -98,7 +102,9 @@ function! g:ReadBrootOutPath(job, exit)
             endif
             let @# = s:alternate_buffer
         else
-            let @# = s:current_buffer
+            if bufexists(s:current_buffer)
+                let @# = s:current_buffer
+            endif
         endif
         if bufexists(l:buffer_number)
             silent execute 'bwipeout! ' . l:buffer_number
@@ -136,7 +142,7 @@ function! g:OpenBrootInPathInWindow(...) abort
     let l:path = expand(get(a:, 1, s:broot_default_explore_path))
     let l:window = get(a:, 2, '')
     let s:out_file = tempname()
-    let l:broot_exec = s:broot_shell_command.' "'.s:broot_exec." --out '".s:out_file."' ".l:path.'"'
+    let l:broot_exec = s:broot_shell_command.' "'.s:broot_exec." ".l:path." ".s:broot_redirect_command." ".s:out_file.'"'
     if l:window ==# ''
         let s:is_current_window = 1
     else
