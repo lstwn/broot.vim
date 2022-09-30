@@ -1,6 +1,8 @@
-# broot.vim lightweight broot integration plugin for vim
+# broot.vim 
 
-A tiny plugin that integrates [broot](https://github.com/Canop/broot) with vim.
+> lightweight [broot](https://github.com/Canop/broot) integration plugin for neovim/vim
+
+A tiny plugin that integrates [broot](https://github.com/Canop/broot) with neovim/vim.
 Broot is configured in such a way that when pressing enter *on a file* this file
 is opened in vim.
 At the same time, your broot `conf.toml` is respected, i.e. only the little
@@ -13,7 +15,7 @@ mentioned enter behavior is appended to your defaults!
 Use your favourite vim plugin manager. For instance, with `vim-plug`:
 
 ```
-Plug 'https://gitlab.com/lstwn/broot.vim'
+Plug 'lstwn/broot.vim'
 ```
 
 Then try `:Broot` in vim which opens broot in vim's current working directory
@@ -22,9 +24,8 @@ and in the current window
 
 ## Compatibility
 
-This plugin is vim only (sorry, neovim) and is not tested on Windows.
-Also, it relies on the terminal feature of vim 8.
-If this is not present, the plugin will not work.
+This plugin is not tested on Windows. It requires Vim 8 (and its terminal
+feature) or Neovim >=0.3.0.
 
 ---
 
