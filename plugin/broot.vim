@@ -142,7 +142,7 @@ function! g:OpenBrootInPathInWindow(...) abort
     let l:path = expand(get(a:, 1, s:broot_default_explore_path))
     let l:window = get(a:, 2, '')
     let s:out_file = tempname()
-    let l:broot_exec = s:broot_shell_command.' "'.s:broot_exec." ".l:path." ".s:broot_redirect_command." ".s:out_file.'"'
+    let l:broot_exec = s:broot_shell_command.' "'.s:broot_exec." '".l:path."' ".s:broot_redirect_command." ".s:out_file.'"'
     if l:window ==# ''
         let s:is_current_window = 1
     else
