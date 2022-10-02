@@ -34,13 +34,17 @@ let s:broot_redirect_command = get(g:, "broot_redirect_command", ">")
 let s:broot_exec = s:broot_command . " --conf '" . s:broot_conf_paths . "'"
 let s:broot_default_explore_path = get(g:, "broot_default_explore_path", ".")
 
-" type BrootSession = Record<JobId (nvim)| BufNr (vim), { out_file: string, terminal_buffer: int,
-" current_buffer: int, alternate_buffer: int, launched_in_active_window: bool }>;
+" type BrootSession = Record<JobId (nvim) | BufNr (vim), { 
+"   out_file: string,
+"   terminal_buffer: int,
+"   current_buffer: int,
+"   alternate_buffer: int,
+"   launched_in_active_window: bool
+" }>;
 let s:sessions = {}
 
-function! g:OnExitNvim(job_id, code, event)
-    let l:session = s:sessions[a:job_id]
-    let l:out_file = l:session.out_file
+function! s:OnTerminalExit(session)
+    let l:out_file = a:session.out_file
     let l:aborted = 1
     try
         if (filereadable(l:out_file))
@@ -60,61 +64,15 @@ function! g:OnExitNvim(job_id, code, event)
     catch
         echoerr "[Broot.vim] Error: ".v:exception
     finally
-        let l:current_buffer = l:session.current_buffer
-        let l:alternate_buffer = l:session.alternate_buffer
-        let l:terminal_buffer = l:session.terminal_buffer
+        let l:terminal_buffer = a:session.terminal_buffer
+        let l:current_buffer = a:session.current_buffer
+        let l:alternate_buffer = a:session.alternate_buffer
+        let l:launched_in_active_window = a:session.launched_in_active_window
         if l:aborted
             " order is important: first switch to old buffer, *then* update
             " alternate buffer
-            if bufexists(l:current_buffer)
-                execute "buffer " . l:current_buffer
-            endif
-            if bufexists(l:alternate_buffer)
-                let @# = l:alternate_buffer
-            endif
-        else
-            if bufexists(l:current_buffer)
-                let @# = l:current_buffer
-            endif
-        endif
-        if a:code == 0 && bufexists(l:terminal_buffer)
-            execute "bwipeout! " . l:terminal_buffer
-        endif
-        unlet s:sessions[a:job_id]
-    endtry
-endfunction
-
-function! g:ReadBrootOutPath(job, exit)
-    let l:terminal_buffer = ch_getbufnr(a:job, "out")
-    let l:session = s:sessions[l:terminal_buffer]
-    let l:out_file = l:session.out_file
-    let l:aborted = 1
-    try
-        if (filereadable(l:out_file))
-            for l:file in readfile(l:out_file)
-                let l:file = fnamemodify(l:file, ":~:.")
-                let l:file_extension = fnamemodify(l:file, ":e")
-                if index(s:broot_external_open_file_extensions, l:file_extension) >= 0
-                    silent execute "!".s:broot_open_commmand." '".l:file."' 2>/dev/null"
-                    redraw!
-                else
-                    execute "edit ".l:file
-                    let l:aborted = 0
-                endif
-            endfor
-            call delete(l:out_file)
-        endif
-    catch
-        echoerr "[Broot.vim] Error: ".v:exception
-    finally
-        let l:current_buffer = l:session.current_buffer
-        let l:alternate_buffer = l:session.alternate_buffer
-        let l:launched_in_active_window = l:session.launched_in_active_window
-        if l:aborted
-            if l:launched_in_active_window
-                if bufexists(l:alternate_buffer)
-                    silent execute "buffer ".l:current_buffer
-                endif
+            if l:launched_in_active_window && bufexists(l:current_buffer)
+                silent execute "buffer ".l:current_buffer
             endif
             if bufexists(l:alternate_buffer)
                 let @# = l:alternate_buffer
@@ -125,10 +83,22 @@ function! g:ReadBrootOutPath(job, exit)
             endif
         endif
         if bufexists(l:terminal_buffer)
-            silent execute "bwipeout! " . l:terminal_buffer
+            silent execute "bwipeout! ".l:terminal_buffer
         endif
-        unlet s:sessions[l:terminal_buffer]
     endtry
+endfunction
+
+function! g:OnTerminalExitNvim(job_id, code, event)
+    let l:session = s:sessions[a:job_id]
+    call s:OnTerminalExit(l:session)
+    unlet s:sessions[a:job_id]
+endfunction
+
+function! g:OnTerminalExitVim(job, exit)
+    let l:terminal_buffer = ch_getbufnr(a:job, "out")
+    let l:session = s:sessions[l:terminal_buffer]
+    call s:OnTerminalExit(l:session)
+    unlet s:sessions[l:terminal_buffer]
 endfunction
 
 function! s:OpenTerminal(cmd, session) abort
@@ -136,7 +106,7 @@ function! s:OpenTerminal(cmd, session) abort
         " do not replace the current buffer
         enew
         let l:job_id = termopen(a:cmd, {
-                    \ "on_exit": "g:OnExitNvim",
+                    \ "on_exit": "g:OnTerminalExitNvim",
                     \})
         " rename the terminal buffer name to
         " something more readable than the long gibberish
@@ -151,7 +121,7 @@ function! s:OpenTerminal(cmd, session) abort
         let l:terminal_buffer = term_start(a:cmd, {
                     \ "term_name": s:broot_command,
                     \ "curwin": 1,
-                    \ "exit_cb": "g:ReadBrootOutPath",
+                    \ "exit_cb": "g:OnTerminalExitVim",
                     \ "norestore": 1,
                     \})
         let a:session.terminal_buffer = l:terminal_buffer
