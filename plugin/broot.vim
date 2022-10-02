@@ -34,57 +34,64 @@ let s:broot_redirect_command = get(g:, "broot_redirect_command", ">")
 let s:broot_exec = s:broot_command . " --conf '" . s:broot_conf_paths . "'"
 let s:broot_default_explore_path = get(g:, "broot_default_explore_path", ".")
 
-" type BrootSession = Record<JobId, { out_file: string, terminal_buffer: int,
-" current_buffer: int, alternate_buffer: int, is_current_window: bool }>;
-" rename to launched_in_active_window
-
-let s:out_file = ""
-let s:terminal_buffer = 0
-let s:current_buffer = 0
-let s:alternate_buffer = 0
-let s:is_current_window = 0
+" type BrootSession = Record<JobId (nvim)| BufNr (vim), { out_file: string, terminal_buffer: int,
+" current_buffer: int, alternate_buffer: int, launched_in_active_window: bool }>;
+let s:sessions = {}
 
 function! g:OnExitNvim(job_id, code, event)
+    let l:session = s:sessions[a:job_id]
+    let l:out_file = l:session.out_file
     let l:aborted = 1
-    if (filereadable(s:out_file))
-        for l:file in readfile(s:out_file)
-            let l:file = fnamemodify(l:file, ":~:.")
-            let l:file_extension = fnamemodify(l:file, ":e")
-            if index(s:broot_external_open_file_extensions, l:file_extension) >= 0
-                silent execute "!".s:broot_open_commmand." '".l:file."' 2>/dev/null"
-                redraw!
-            else
-                execute "edit " . l:file
-                let l:aborted = 0
+    try
+        if (filereadable(l:out_file))
+            for l:file in readfile(l:out_file)
+                let l:file = fnamemodify(l:file, ":~:.")
+                let l:file_extension = fnamemodify(l:file, ":e")
+                if index(s:broot_external_open_file_extensions, l:file_extension) >= 0
+                    silent execute "!".s:broot_open_commmand." '".l:file."' 2>/dev/null"
+                    redraw!
+                else
+                    execute "edit " . l:file
+                    let l:aborted = 0
+                endif
+            endfor
+            call delete(l:out_file)
+        endif
+    catch
+        echoerr "[Broot.vim] Error: ".v:exception
+    finally
+        let l:current_buffer = l:session.current_buffer
+        let l:alternate_buffer = l:session.alternate_buffer
+        let l:terminal_buffer = l:session.terminal_buffer
+        if l:aborted
+            " order is important: first switch to old buffer, *then* update
+            " alternate buffer
+            if bufexists(l:current_buffer)
+                execute "buffer " . l:current_buffer
             endif
-        endfor
-        call delete(s:out_file)
-    endif
-    if l:aborted
-        " order is important: first switch to old buffer, *then* update
-        " alternate buffer
-        if bufexists(s:current_buffer)
-            execute "buffer " . s:current_buffer
+            if bufexists(l:alternate_buffer)
+                let @# = l:alternate_buffer
+            endif
+        else
+            if bufexists(l:current_buffer)
+                let @# = l:current_buffer
+            endif
         endif
-        if bufexists(s:alternate_buffer)
-            let @# = s:alternate_buffer
+        if a:code == 0 && bufexists(l:terminal_buffer)
+            execute "bwipeout! " . l:terminal_buffer
         endif
-    else
-        if bufexists(s:current_buffer)
-            let @# = s:current_buffer
-        endif
-    endif
-    if a:code == 0 && bufexists(s:terminal_buffer)
-        execute "bwipeout! " . s:terminal_buffer
-    endif
+        unlet s:sessions[a:job_id]
+    endtry
 endfunction
 
 function! g:ReadBrootOutPath(job, exit)
-    let l:buffer_number = ch_getbufnr(a:job, "out")
+    let l:terminal_buffer = ch_getbufnr(a:job, "out")
+    let l:session = s:sessions[l:terminal_buffer]
+    let l:out_file = l:session.out_file
+    let l:aborted = 1
     try
-        let l:aborted = 1
-        if (filereadable(s:out_file))
-            for l:file in readfile(s:out_file)
+        if (filereadable(l:out_file))
+            for l:file in readfile(l:out_file)
                 let l:file = fnamemodify(l:file, ":~:.")
                 let l:file_extension = fnamemodify(l:file, ":e")
                 if index(s:broot_external_open_file_extensions, l:file_extension) >= 0
@@ -95,28 +102,36 @@ function! g:ReadBrootOutPath(job, exit)
                     let l:aborted = 0
                 endif
             endfor
-            call delete(s:out_file)
+            call delete(l:out_file)
         endif
     catch
         echoerr "[Broot.vim] Error: ".v:exception
     finally
+        let l:current_buffer = l:session.current_buffer
+        let l:alternate_buffer = l:session.alternate_buffer
+        let l:launched_in_active_window = l:session.launched_in_active_window
         if l:aborted
-            if s:is_current_window
-                silent execute "buffer ".s:current_buffer
+            if l:launched_in_active_window
+                if bufexists(l:alternate_buffer)
+                    silent execute "buffer ".l:current_buffer
+                endif
             endif
-            let @# = s:alternate_buffer
+            if bufexists(l:alternate_buffer)
+                let @# = l:alternate_buffer
+            endif
         else
-            if bufexists(s:current_buffer)
-                let @# = s:current_buffer
+            if bufexists(l:current_buffer)
+                let @# = l:current_buffer
             endif
         endif
-        if bufexists(l:buffer_number)
-            silent execute "bwipeout! " . l:buffer_number
+        if bufexists(l:terminal_buffer)
+            silent execute "bwipeout! " . l:terminal_buffer
         endif
+        unlet s:sessions[l:terminal_buffer]
     endtry
 endfunction
 
-function! s:OpenTerminal(cmd) abort
+function! s:OpenTerminal(cmd, session) abort
     if has("nvim")
         " do not replace the current buffer
         enew
@@ -125,19 +140,22 @@ function! s:OpenTerminal(cmd) abort
                     \})
         " rename the terminal buffer name to
         " something more readable than the long gibberish
-        execute "file " . s:broot_command
-        let s:terminal_buffer = bufnr()
+        execute "file ".s:broot_command." ".l:job_id
+        let a:session.terminal_buffer = bufnr()
+        let s:sessions[l:job_id] = a:session
         " for a clean terminal (the TermOpen autocmd does not work when
         " starting nvim with a directory)
         startinsert
         setlocal nonumber norelativenumber signcolumn=no colorcolumn=0
     else
-        let s:terminal_buffer = term_start(a:cmd, {
+        let l:terminal_buffer = term_start(a:cmd, {
                     \ "term_name": s:broot_command,
                     \ "curwin": 1,
                     \ "exit_cb": "g:ReadBrootOutPath",
                     \ "norestore": 1,
                     \})
+        let a:session.terminal_buffer = l:terminal_buffer
+        let s:sessions[l:terminal_buffer] = a:session
     endif
 endfunction
 
@@ -145,19 +163,19 @@ endfunction
 function! g:OpenBrootInPathInWindow(...) abort
     let l:path = expand(get(a:, 1, s:broot_default_explore_path))
     let l:window = get(a:, 2, "")
-    let s:out_file = tempname()
-    let l:broot_exec = s:broot_shell_command.' "'.s:broot_exec." '".l:path."' ".s:broot_redirect_command." ".s:out_file.'"'
+    let l:session = { "out_file": tempname() }
+    let l:broot_exec = s:broot_shell_command.' "'.s:broot_exec." '".l:path."' ".s:broot_redirect_command." ".l:session.out_file.'"'
     if l:window ==# ""
-        let s:is_current_window = 1
+        let l:session.launched_in_active_window = 1
     else
         execute l:window
-        let s:is_current_window = 0
+        let l:session.launched_in_active_window = 0
     endif
-    let s:current_buffer = bufnr(@%)
-    let s:alternate_buffer = bufnr(@#)
+    let l:session.current_buffer = bufnr(@%)
+    let l:session.alternate_buffer = bufnr(@#)
     " keepalt does not work here apparently
     " (due to function call instead of a command, c.f. :h alternate-file)
-    call s:OpenTerminal(l:broot_exec)
+    call s:OpenTerminal(l:broot_exec, l:session)
 endfunction
 
 " opens broot in the given (split) window command and in the given path
