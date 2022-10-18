@@ -29,8 +29,8 @@ call writefile(s:broot_vim_conf, s:broot_vim_conf_path)
 let s:broot_open_commmand = get(g:, "broot_open_commmand", "xdg-open")
 let s:broot_external_open_file_extensions = get(g:, "broot_external_open_file_extensions", ["pdf"])
 let s:broot_command = get(g:, "broot_command", "broot")
-let s:broot_shell_command = get(g:, "broot_shell_command", "sh -c")
-let s:broot_redirect_command = get(g:, "broot_redirect_command", ">")
+let s:broot_shell_command = get(g:, "broot_shell_command", &shell . " " . &shellcmdflag)
+let s:broot_redirect_command = get(g:, "broot_redirect_command", &shellredir)
 let s:broot_exec = s:broot_command . " --conf '" . s:broot_conf_paths . "'"
 let s:broot_default_explore_path = get(g:, "broot_default_explore_path", ".")
 
