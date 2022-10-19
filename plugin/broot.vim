@@ -12,7 +12,7 @@ function! s:CreateEnv()
     endfunction
 
     let env = {
-        \ "os": { "name": "" },
+        \ "os": { "name": "", "open_command": "" },
         \ "vim": {
         \     "type": "vim", "version": v:version, "terminal": v:false,
         \     "settings": {
@@ -26,12 +26,15 @@ function! s:CreateEnv()
     let os = env.os
     if has("linux")
         let os.name = "linux"
+        let os.open_command = "xdg-open"
     endif
     if has("mac")
         let os.name = "mac"
+        let os.open_command = "open"
     endif
     if has("win32")
         let os.name = "win32"
+        let os.open_command = "start"
     endif
 
     let vim = env.vim
@@ -72,7 +75,7 @@ function! s:CreateConfig(env)
         \         'execution = ":print_path"',
         \         'apply_to = "file"',
         \     ]),
-        \     "open_commmand": get(g:, "broot_open_command", "xdg-open"),
+        \     "open_commmand": get(g:, "broot_open_command", a:env.os.open_command),
         \     "external_open_file_extensions": get(g:, "broot_external_open_file_extensions", ["pdf"]),
         \     "broot_command": get(g:, "broot_command", "broot"),
         \     "shell_command": get(g:, "broot_shell_command", &shell . " " . &shellcmdflag),
