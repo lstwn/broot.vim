@@ -50,7 +50,7 @@ function! s:CreateEnv()
         let vim.version = s:GetNVimVersion()
     else
         if has("terminal")
-            vim.terminal = v:true
+            let vim.terminal = v:true
         endif
     endif
 
