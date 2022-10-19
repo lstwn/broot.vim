@@ -3,14 +3,18 @@ if exists("g:loaded_broot") || &compatible
 endif
 let g:loaded_broot = 1
 
-function! s:CreateEnv()
-    function s:GetNVimVersion()
-        redir => s
-        silent! version
-        redir END
-        return matchstr(s, 'NVIM v\zs[^\n]*')
-    endfunction
+function s:GetNVimVersion()
+    redir => s
+    silent! version
+    redir END
+    return matchstr(s, 'NVIM v\zs[^\n]*')
+endfunction
 
+function s:GetBrootVersion(broot_command)
+    return trim(system(a:broot_command." --version"))
+endfunction
+
+function! s:CreateEnv()
     let env = {
         \ "os": { "name": "", "open_command": "" },
         \ "vim": {
@@ -84,6 +88,8 @@ function! s:CreateConfig(env)
         \ },
         \ }
 
+    let l:config.env.broot = s:GetBrootVersion(l:config.settings.broot_command)
+
     let l:broot_vim_conf_path = fnamemodify(resolve(expand("<sfile>:p")), ":h:h") . "/broot.toml"
     call writefile(l:config.settings.broot_vim_conf, l:broot_vim_conf_path)
 
@@ -95,7 +101,7 @@ endfunction
 
 let s:config = s:CreateConfig(s:env)
 
-function! g:LogBrootConfig()
+function! g:BrootLogConfig()
     return json_encode(s:config)
 endfunction
 
