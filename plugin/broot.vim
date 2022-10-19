@@ -11,7 +11,8 @@ function s:GetNVimVersion()
 endfunction
 
 function s:GetBrootVersion(broot_command)
-    return trim(system(a:broot_command." --version"))
+    silent let l:version = trim(system(a:broot_command." --version"))
+    return l:version
 endfunction
 
 function! s:CreateEnv()
