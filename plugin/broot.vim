@@ -76,7 +76,7 @@ function! s:CreateConfig(env)
         \     "broot_vim_conf": get(g:, "broot_vim_conf", [
         \         '[[verbs]]',
         \         'key = "enter"',
-        \         'execution = ":print_path"',
+        \         'external = "echo +{line} {file}"',
         \         'apply_to = "file"',
         \     ]),
         \     "open_commmand": get(g:, "broot_open_command", a:env.os.open_command),
