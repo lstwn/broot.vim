@@ -62,13 +62,6 @@ function! s:IsCompatible(env)
     return a:env.vim.terminal
 endfunction
 
-let s:env = s:CreateEnv()
-
-if !s:IsCompatible(s:env)
-    echoerr "[Broot.vim] Error: (n)VIM version not compatible due to lack of terminal support."
-    finish
-endif
-
 function! s:CreateConfig(env)
     let l:config = {
         \ "env": a:env,
@@ -89,6 +82,10 @@ function! s:CreateConfig(env)
         \ },
         \ }
 
+    if !filereadable(l:config.settings.broot_default_conf_path)
+        throw "Path to your broot config '".l:config.settings.broot_default_conf_path."' is invalid. Please adjust g:broot_default_conf_path variable to point to its location."
+    endif
+
     let l:config.env.broot = s:GetBrootVersion(l:config.settings.broot_command)
 
     let l:broot_vim_conf_path = fnamemodify(resolve(expand("<sfile>:p")), ":h:h") . "/broot.toml"
@@ -100,7 +97,17 @@ function! s:CreateConfig(env)
     return l:config
 endfunction
 
-let s:config = s:CreateConfig(s:env)
+let s:env = s:CreateEnv()
+
+try
+    if !s:IsCompatible(s:env)
+        throw "(n)VIM version not compatible due to lack of terminal support."
+    endif
+    let s:config = s:CreateConfig(s:env)
+catch
+    echoerr "[Broot.vim] Error: ".v:exception
+    finish
+endtry
 
 function! g:BrootLogConfig()
     return json_encode(s:config)
@@ -127,12 +134,10 @@ function! s:OnTerminalExit(session)
                 let l:file_extension = fnamemodify(l:path, ":e")
                 if index(s:config.settings.external_open_file_extensions, l:file_extension) >= 0
                     let l:cmd = "!".s:config.settings.open_commmand." '".l:path."' 2>/dev/null"
-                    echomsg l:cmd
                     silent execute l:cmd
                     redraw!
                 else
                     let l:cmd = "edit ".l:lineoffset." ".l:path
-                    echo l:cmd
                     execute l:cmd
                     let l:aborted = 0
                 endif
