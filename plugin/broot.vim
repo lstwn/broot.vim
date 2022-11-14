@@ -120,14 +120,20 @@ function! s:OnTerminalExit(session)
     let l:aborted = 1
     try
         if (filereadable(l:out_file))
-            for l:file in readfile(l:out_file)
-                let l:file = fnamemodify(l:file, ":~:.")
-                let l:file_extension = fnamemodify(l:file, ":e")
+            for l:line in readfile(l:out_file)
+                let l:lineoffset = matchstr(l:line, '+\d\+')
+                let l:path = l:line[len(l:lineoffset)+1:-1]
+                let l:path = fnamemodify(l:path, ":~:.")
+                let l:file_extension = fnamemodify(l:path, ":e")
                 if index(s:config.settings.external_open_file_extensions, l:file_extension) >= 0
-                    silent execute "!".s:config.settings.open_commmand." '".l:file."' 2>/dev/null"
+                    let l:cmd = "!".s:config.settings.open_commmand." '".l:path."' 2>/dev/null"
+                    echomsg l:cmd
+                    silent execute l:cmd
                     redraw!
                 else
-                    execute "edit " . l:file
+                    let l:cmd = "edit ".l:lineoffset." ".l:path
+                    echo l:cmd
+                    execute l:cmd
                     let l:aborted = 0
                 endif
             endfor
