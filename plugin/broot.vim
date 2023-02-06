@@ -88,16 +88,19 @@ function! s:CreateConfig(env)
 
     let l:config.env.broot = s:GetBrootVersion(l:config.settings.broot_command)
 
-    let l:broot_vim_conf_path = fnamemodify(resolve(expand("<sfile>:p")), ":h:h") . "/broot.toml"
-    call writefile(l:config.settings.broot_vim_conf, l:broot_vim_conf_path)
+    call writefile(l:config.settings.broot_vim_conf, s:broot_vim_conf_path)
 
-    let l:broot_conf_paths = l:config.settings.broot_default_conf_path . ";" . l:broot_vim_conf_path
+    let l:broot_conf_paths = l:config.settings.broot_default_conf_path . ";" . s:broot_vim_conf_path
     let l:config.broot_exec = l:config.settings.broot_command . " --conf '" . l:broot_conf_paths . "'"
 
     return l:config
 endfunction
 
 let s:env = s:CreateEnv()
+
+" expand("<sfile>:p") must be called at the top level or it returns the stack
+" trace not the relative path
+let s:broot_vim_conf_path = fnamemodify(resolve(expand("<sfile>:p")), ":h:h") . "/broot.toml"
 
 try
     if !s:IsCompatible(s:env)
