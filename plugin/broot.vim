@@ -98,8 +98,9 @@ endfunction
 
 let s:env = s:CreateEnv()
 
-" expand("<sfile>:p") must be called at the top level or it returns the stack
-" trace not the relative path
+" expand("<sfile>:p") must be called at the top level of the script or
+" it returns the stack trace and not the relative path, see:
+" https://github.com/vim/vim/issues/9178#issuecomment-974887056
 let s:broot_vim_conf_path = fnamemodify(resolve(expand("<sfile>:p")), ":h:h") . "/broot.toml"
 
 try
