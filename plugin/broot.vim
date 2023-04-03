@@ -219,6 +219,7 @@ endfunction
 " opens broot in the given path and in the given (split) window command
 function! g:OpenBrootInPathInWindow(...) abort
     let l:path = expand(get(a:, 1, s:config.settings.default_explore_path))
+    let l:path = isdirectory(l:path) ? l:path : s:config.settings.default_explore_path
     let l:window = get(a:, 2, "")
     let l:session = { "out_file": tempname() }
     let l:command = s:config.settings.shell_command.' "'.s:config.broot_exec." '".l:path."' ".s:config.settings.redirect_command." ".l:session.out_file.'"'
