@@ -90,7 +90,9 @@ function! s:CreateConfig(env)
 
     call writefile(l:config.settings.broot_vim_conf, s:broot_vim_conf_path)
 
-    let l:broot_conf_paths = l:config.settings.broot_default_conf_path . ";" . s:broot_vim_conf_path
+    " load vim-soecific conf first as broot appends verbs, ensuring that
+    " broot_vim_conf verbs override those in default config
+    let l:broot_conf_paths = s:broot_vim_conf_path . ";" . l:config.settings.broot_default_conf_path
     let l:config.broot_exec = l:config.settings.broot_command . " --conf '" . l:broot_conf_paths . "'"
 
     return l:config
