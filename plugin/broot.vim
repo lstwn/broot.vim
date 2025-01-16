@@ -19,13 +19,10 @@ function! s:CreateEnv()
     let env = {
         \ "os": { "name": "", "open_command": "" },
         \ "vim": {
-        \     "type": "vim", "version": v:version, "terminal": v:false,
-        \     "settings": {
-        \              "shell": &shell,
-        \              "shellcmdflag": &shellcmdflag,
-        \              "shellredir": &shellredir,
-        \          },
-        \     },
+        \     "type": "vim",
+        \     "version": v:version,
+        \     "terminal": v:false,
+        \ },
         \ }
 
     let os = env.os
@@ -77,7 +74,7 @@ function! s:CreateConfig(env)
         \     "external_open_file_extensions": get(g:, "broot_external_open_file_extensions", ["pdf"]),
         \     "broot_command": get(g:, "broot_command", "broot"),
         \     "shell_command": get(g:, "broot_shell_command", &shell . " " . &shellcmdflag),
-        \     "redirect_command": get(g:, "broot_redirect_command", &shellredir),
+        \     "redirect_command": get(g:, "broot_redirect_command", ">"),
         \     "default_explore_path": get(g:, "broot_default_explore_path", "."),
         \ },
         \ }
@@ -91,7 +88,7 @@ function! s:CreateConfig(env)
     call writefile(l:config.settings.broot_vim_conf, s:broot_vim_conf_path)
 
     let l:broot_conf_paths = l:config.settings.broot_default_conf_path . ";" . s:broot_vim_conf_path
-    let l:config.broot_exec = l:config.settings.broot_command . " --conf '" . l:broot_conf_paths . "'"
+    let l:config.broot_exec = l:config.settings.broot_command . " --conf " . shellescape(l:broot_conf_paths)
 
     return l:config
 endfunction
@@ -220,9 +217,10 @@ endfunction
 function! g:OpenBrootInPathInWindow(...) abort
     let l:path = expand(get(a:, 1, s:config.settings.default_explore_path))
     let l:path = isdirectory(l:path) ? l:path : s:config.settings.default_explore_path
+    let l:path = shellescape(l:path)
     let l:window = get(a:, 2, "")
     let l:session = { "out_file": tempname() }
-    let l:command = s:config.settings.shell_command.' "'.s:config.broot_exec." '".l:path."' ".s:config.settings.redirect_command." ".l:session.out_file.'"'
+    let l:command = s:config.settings.shell_command.' "'.s:config.broot_exec." ".l:path." ".s:config.settings.redirect_command." ".l:session.out_file.'"'
     if l:window ==# ""
         let l:session.launched_in_active_window = 1
     else
